@@ -1,7 +1,7 @@
-// global
-import { sql, DatabaseTransactionConnectionType as TrxHandler } from 'slonik';
-import { Item } from 'graasp';
-// local
+import { DatabaseTransactionConnection as TrxHandler, sql } from 'slonik';
+
+import { Item } from '@graasp/sdk';
+
 import { ItemLoginExtra, ItemLoginMemberExtra } from './interfaces/item-login';
 
 export class ItemLoginService {
@@ -18,8 +18,7 @@ export class ItemLoginService {
    * @param transactionHandler Database transaction handler
    */
   async create(itemId: string, memberId: string, transactionHandler: TrxHandler): Promise<void> {
-    await transactionHandler
-      .query(sql`
+    await transactionHandler.query(sql`
         INSERT INTO item_member_login (item_id, member_id)
         VALUES (${itemId}, ${memberId})
       `);
@@ -30,8 +29,10 @@ export class ItemLoginService {
    * @param item Item
    * @param transactionHandler Database transaction handler
    */
-  async getDetailsOfItemWithTheTag(item: Item, transactionHandler: TrxHandler):
-    Promise<{ id: string, extra: ItemLoginExtra }> {
+  async getDetailsOfItemWithTheTag(
+    item: Item,
+    transactionHandler: TrxHandler,
+  ): Promise<{ id: string; extra: ItemLoginExtra }> {
     return transactionHandler.maybeOne(sql`
         SELECT item.id AS "id", extra
           FROM item
@@ -47,10 +48,14 @@ export class ItemLoginService {
    * @param item Item
    * @param transactionHandler Database transaction handler
    */
-  async getItemMembers(item: Item, transactionHandler: TrxHandler):
-    Promise<({ id: string, name: string, extra: ItemLoginMemberExtra })[]> {
-    return transactionHandler
-      .query<({ id: string, name: string, extra: ItemLoginMemberExtra })>(sql`
+  async getItemMembers(
+    item: Item,
+    transactionHandler: TrxHandler,
+  ): Promise<{ id: string; name: string; extra: ItemLoginMemberExtra }[]> {
+    return (
+      transactionHandler
+        .query<{ id: string; name: string; extra: ItemLoginMemberExtra }>(
+          sql`
         SELECT member.id AS "id",
             member.name AS "name",
             member.extra AS "extra"
@@ -58,9 +63,11 @@ export class ItemLoginService {
         INNER JOIN item_member_login
           ON member.id = item_member_login.member_id
         WHERE item_member_login.item_id = ${item.id}
-      `)
-      // TODO: is there a better way?
-      .then(({ rows }) => rows.slice(0));
+      `,
+        )
+        // TODO: is there a better way?
+        .then(({ rows }) => rows.slice(0))
+    );
   }
 
   /**

@@ -2,21 +2,30 @@
 import {
   DatabaseTransactionHandler,
   ItemMembershipService,
-  ItemService, Member
-} from 'graasp';
+  ItemService,
+  Member,
+  TaskStatus,
+} from '@graasp/sdk';
+
 // local
 import { ItemLoginSchema } from '../interfaces/item-login';
 import { ItemNotFound, MemberCannotAdminItem } from '../util/graasp-item-login-error';
 import { BaseItemLoginTask } from './base-item-login-task';
 
 export class UpdateItemLoginSchemaTask extends BaseItemLoginTask<{ loginSchema: ItemLoginSchema }> {
-  get name(): string { return UpdateItemLoginSchemaTask.name; }
+  get name(): string {
+    return UpdateItemLoginSchemaTask.name;
+  }
   private itemService: ItemService;
   private itemMembershipService: ItemMembershipService;
-  private loginSchema: ItemLoginSchema ;
+  private loginSchema: ItemLoginSchema;
 
-  constructor(member: Member, itemId: string, loginSchema: ItemLoginSchema,
-    itemService: ItemService, itemMembershipService: ItemMembershipService
+  constructor(
+    member: Member,
+    itemId: string,
+    loginSchema: ItemLoginSchema,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
   ) {
     super(member, null, null);
     this.targetId = itemId;
@@ -26,7 +35,7 @@ export class UpdateItemLoginSchemaTask extends BaseItemLoginTask<{ loginSchema: 
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     // get item
     const item = await this.itemService.get(this.targetId, handler);
@@ -38,12 +47,12 @@ export class UpdateItemLoginSchemaTask extends BaseItemLoginTask<{ loginSchema: 
 
     const { id, extra } = item;
     const loginSchema = this.loginSchema;
-    Object.assign(extra, { itemLogin: { loginSchema }});
+    Object.assign(extra, { itemLogin: { loginSchema } });
 
     // save schema change
     await this.itemService.update(id, { extra }, handler);
 
     this._result = { loginSchema };
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 }

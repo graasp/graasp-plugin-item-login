@@ -6,13 +6,10 @@ export default {
       properties: {
         username: { type: 'string', minLength: 3, maxLength: 50, pattern: '^\\S+( \\S+)*$' },
         memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
-        password: { type: 'string', minLength: 3, maxLength: 50, pattern: '^\\S+( \\S+)*$' }
+        password: { type: 'string', minLength: 3, maxLength: 50, pattern: '^\\S+( \\S+)*$' },
       },
-      oneOf: [
-        { required: ['username'] },
-        { required: ['memberId'] }
-      ],
-      additionalProperties: false
+      oneOf: [{ required: ['username'] }, { required: ['memberId'] }],
+      additionalProperties: false,
     },
     loginSchema: {
       type: 'object',
@@ -21,12 +18,12 @@ export default {
         loginSchema: {
           type: 'string',
           // matches ItemLoginSchema enum in interface
-          enum: ['username', 'username+password', 'anonymous', 'anonymous+password']
-        }
+          enum: ['username', 'username+password', 'anonymous', 'anonymous+password'],
+        },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
-  }
+  },
 };
 
 const login = {
@@ -34,28 +31,25 @@ const login = {
   querystring: {
     type: 'object',
     properties: { m: { type: 'boolean' } },
-    additionalProperties: false
+    additionalProperties: false,
   },
   body: { $ref: 'http://graasp.org/item-login/#/definitions/credentials' },
   response: {
     '2xx': { $ref: 'http://graasp.org/members/#/definitions/member' }, // TODO: remove passwordHash. How to "install" changes to the original schema??
     '4xx': { $ref: 'http://graasp.org/#/definitions/error' },
     '5xx': { $ref: 'http://graasp.org/#/definitions/error' },
-  }
+  },
 };
 
 const getLoginSchema = {
   params: { $ref: 'http://graasp.org/#/definitions/idParam' },
   response: {
     '2xx': {
-      allOf: [
-        { $ref: 'http://graasp.org/item-login/#/definitions/loginSchema' },
-        { required: [] }
-      ]
+      allOf: [{ $ref: 'http://graasp.org/item-login/#/definitions/loginSchema' }, { required: [] }],
     },
     '4xx': { $ref: 'http://graasp.org/#/definitions/error' },
     '5xx': { $ref: 'http://graasp.org/#/definitions/error' },
-  }
+  },
 };
 
 const updateLoginSchema = {
@@ -65,11 +59,7 @@ const updateLoginSchema = {
     '2xx': { $ref: 'http://graasp.org/item-login/#/definitions/loginSchema' },
     '4xx': { $ref: 'http://graasp.org/#/definitions/error' },
     '5xx': { $ref: 'http://graasp.org/#/definitions/error' },
-  }
+  },
 };
 
-export {
-  login,
-  getLoginSchema,
-  updateLoginSchema
-};
+export { login, getLoginSchema, updateLoginSchema };
